@@ -1,9 +1,10 @@
 import React from 'react'
+import { connect } from 'react-redux'
 
-import { addCoords } from './actions/coords'
+import { addCoords } from '../actions/coords'
 import { getLatLng, getPosition } from '../apiClient.js'
 
-export default class App extends React.Component {
+class App extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
@@ -11,30 +12,31 @@ export default class App extends React.Component {
       lng: null,
       data: null,
       location: null,
-      map_url: null,
+      mapUrl: null,
       errMessage: null
     }
   }
 
   refreshCoords () {
     getLatLng((err, data) => {
-      if (!err) this.setState({
-        lat: data.latitude,
-        lng: data.longitude,
-        data
-      })
+      if (!err) {
+        this.setState({
+          lat: data.latitude,
+          lng: data.longitude,
+          data
+        })
+      }
       this.props.dispatch(addCoords(data.latitude, data.longitude))
       this.refreshPosition(data.latitude, data.longitude)
     })
   }
   refreshPosition (lat, lng) {
-    // const {lat, lng} = this.state
     getPosition(lat, lng, (err, data) => {
       if (!err) {
-        const { timezone_id, map_url } = data
+        const { timezone_id, mapUrl } = data
         this.setState({
           location: timezone_id,
-          map_url,
+          mapUrl,
           errMessage: null
         })
       } else {
@@ -43,7 +45,7 @@ export default class App extends React.Component {
     })
   }
   render () {
-    const { lat, lng, location, errMessage, map_url } = this.state
+    const { lat, lng, location, errMessage, mapUrl } = this.state
     return (
       <div>
         <h1>International Space Station</h1>
@@ -51,7 +53,7 @@ export default class App extends React.Component {
         <button onClick={this.refreshCoords.bind(this)}>WHERE IS THE SATELITE</button>
         <h2>Lat: {lat} Lng: {lng}</h2>
         <h3>{location}</h3>
-        <a href={map_url}>Show me the map</a>
+        <a href={mapUrl}>Show me the map</a>
       </div>
     )
   }
@@ -59,11 +61,11 @@ export default class App extends React.Component {
 
 // wont need this till polyline, only writing code to store coords not use them yet
 
-// const mapStateToProps = (state) => {
-//   return {
-//   coords: state.coords
-//   }
-// }
+const mapStateToProps = (state) => {
+  return {
+    coords: state.coords
+  }
+}
 
 // but i do want to connect so I can use dispatch ;)
-export default connect(mapStateToProps)()
+export default connect(mapStateToProps)(App)
